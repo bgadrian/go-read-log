@@ -2,6 +2,7 @@ package main
 
 import "testing"
 
+var fnBench = "read-files/benchmark_1MB.log"
 var fn = "read-files/log_2lines.log"
 var result = []lineInfo {
 	{"67.248.219.84", "/a", "9670"},
@@ -28,7 +29,7 @@ func TestProcessSeq(t *testing.T) {
 }
 
 func TestProcessThreadPool(t *testing.T) {
-	res := processThreadPool(fn, 2)
+	res := processThreadPool(fn, 1)
 
 	if len(res) != len(result) {
 		t.Errorf("different result")
@@ -43,6 +44,37 @@ func TestProcessThreadPool(t *testing.T) {
 
 		t.Errorf("exp '%v' got '%v'",
 			should, got)
+	}
+}
+
+
+func BenchmarkProcessSeq(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processSeq(fnBench)
+	}
+}
+
+func BenchmarkProcessThreadPool1(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPool(fnBench, 1)
+	}
+}
+
+func BenchmarkProcessThreadPool2(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPool(fnBench, 2)
+	}
+}
+
+func BenchmarkProcessThreadPool3(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPool(fnBench, 3)
+	}
+}
+
+func BenchmarkProcessThreadPool5(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPool(fnBench, 5)
 	}
 }
 

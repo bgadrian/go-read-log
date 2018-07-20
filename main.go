@@ -27,6 +27,9 @@ func processSeq(fname string)[]*lineInfo {
 	for scanner.Scan() {
 		//0, 6 ,8
 		lineResult = strings.SplitN(scanner.Text(), " ", 8+2)
+		if len(lineResult) < 10 {
+			continue
+		}
 		allData = append(allData, &lineInfo{lineResult[0], lineResult[6], lineResult[8]})
 
 	}
@@ -37,7 +40,7 @@ func processSeq(fname string)[]*lineInfo {
 // processThreadPool split the work between jobs.
 func processThreadPool(fname string, workers int) []*lineInfo {
 	jobs := make(chan []byte, workers)
-	splitData := make(map[int][]*lineInfo, workers)
+	splitData := make([][]*lineInfo, workers)
 	var wg sync.WaitGroup
 
 	worker := func(work chan []byte, workerID int) {
@@ -46,6 +49,9 @@ func processThreadPool(fname string, workers int) []*lineInfo {
 			line, more := <-jobs
 			if more {
 				lineResult = strings.SplitN(string(line), " ", 8+2)
+				if len(lineResult) < 10 {
+					continue
+				}
 				splitData[workerID] = append(splitData[workerID], &lineInfo{lineResult[0], lineResult[6], lineResult[8]} )
 				} else {
 					wg.Done()
@@ -55,7 +61,9 @@ func processThreadPool(fname string, workers int) []*lineInfo {
 	}
 
 	for i := 0 ; i < workers ; i++ {
-		go worker(jobs, i)
+		go func(id int) {
+			worker(jobs, id)
+		}(i)
 	}
 	wg.Add(workers)
 
