@@ -2,7 +2,9 @@ package main
 
 import "testing"
 
-var fnBench = "read-files/log_200kb.log"
+//var fnBench = "read-files/log_200kb.log"
+//var fnBench = "read-files/log_2lines.log"
+var fnBench = "read-files/log_1MB.log"
 var fn = "read-files/log_2lines.log"
 var result = []lineInfo {
 	{"67.248.219.84", "/a", "9670"},
@@ -60,12 +62,6 @@ func BenchmarkProcessThreadPool1(b *testing.B) {
 	}
 }
 
-func BenchmarkProcessThreadPool2(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		processThreadPool(fnBench, 2)
-	}
-}
-
 func BenchmarkProcessThreadPool3(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		processThreadPool(fnBench, 3)
@@ -75,6 +71,12 @@ func BenchmarkProcessThreadPool3(b *testing.B) {
 func BenchmarkProcessThreadPool5(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		processThreadPool(fnBench, 5)
+	}
+}
+
+func BenchmarkProcessThreadPool50(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPool(fnBench, 50)
 	}
 }
 

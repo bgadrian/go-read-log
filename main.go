@@ -39,33 +39,28 @@ func processSeq(fname string)[]*lineInfo {
 
 // processThreadPool split the work between jobs.
 func processThreadPool(fname string, workers int) []*lineInfo {
-	jobs := make(chan []byte, workers)
+	jobs := make(chan string, workers)
 	splitData := make([][]*lineInfo, workers)
 	var wg sync.WaitGroup
 
-	worker := func(work chan []byte, workerID int) {
+	worker := func(work chan string, workerID int) {
+		defer wg.Done()
 		var lineResult []string
-		for {
-			line, more := <-jobs
-			if more {
-				lineResult = strings.SplitN(string(line), " ", 8+2)
-				if len(lineResult) < 10 {
-					continue
-				}
-				splitData[workerID] = append(splitData[workerID], &lineInfo{lineResult[0], lineResult[6], lineResult[8]} )
-				} else {
-					wg.Done()
-					return
+		for  line := range jobs {
+			lineResult = strings.SplitN(line, " ", 8+2)
+			if len(lineResult) < 10 {
+				continue
 			}
+			splitData[workerID] = append(splitData[workerID], &lineInfo{lineResult[0], lineResult[6], lineResult[8]} )
 		}
 	}
 
+	wg.Add(workers)
 	for i := 0 ; i < workers ; i++ {
 		go func(id int) {
 			worker(jobs, id)
 		}(i)
 	}
-	wg.Add(workers)
 
 	file, err := os.Open(fname)
 	if err != nil {
@@ -75,7 +70,8 @@ func processThreadPool(fname string, workers int) []*lineInfo {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		jobs <- scanner.Bytes()
+		//cannot use Bytes(), race condition
+		jobs <- scanner.Text()
 	}
 	//wait for all workers finish
 	close(jobs)
