@@ -1,14 +1,9 @@
 goos: linux
 goarch: amd64
 pkg: github.com/bgadrian/go-read-log/read-files
-BenchmarkBufioReaderBytes-4     	  500000	      2904 ns/op
-BenchmarkBufioReaderString-4    	  500000	      2954 ns/op
-BenchmarkFileRead16KB-4         	  100000	     20490 ns/op
-BenchmarkFileRead32KB-4         	  100000	     21266 ns/op
-BenchmarkFileRead64KB-4         	   50000	     27585 ns/op
-BenchmarkFileRead128KB-4        	   50000	     40461 ns/op
-BenchmarkFileRead512KB-4        	   20000	     76006 ns/op
-BenchmarkBufioScannerString-4   	   10000	    189223 ns/op
-BenchmarkBufioScannerBytes-4    	   20000	     62283 ns/op
+BenchmarkBufioReaderLine-4      	   20000	     61135 ns/op
+BenchmarkBufioReaderString-4    	   10000	    176135 ns/op
+BenchmarkBufioScannerString-4   	   10000	    117279 ns/op
+BenchmarkBufioScannerBytes-4    	   20000	     61785 ns/op
 PASS
-ok  	github.com/bgadrian/go-read-log/read-files	18.191s
+ok  	github.com/bgadrian/go-read-log/read-files	6.665s

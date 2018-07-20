@@ -7,65 +7,60 @@ import (
 	"bufio"
 )
 
-// readerBytes bufio.reader.ReadBytes each line.
-func readerBytes(fname string) {
+func readerReadLine(fname string) {
 	file, err := os.Open(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 	bufferedReader := bufio.NewReader(file)
 
 	var line []byte
+	var isPrefix bool
 	fake := func(s []byte) {
 
 	}
-	for  ; err != nil; line, err = bufferedReader.ReadBytes('\n'){
+	for {
+		line, isPrefix, err = bufferedReader.ReadLine()
+		if isPrefix {
+			log.Fatal("isPrefix logic to concatenate lines is not implemented")
+		}
+		if err != nil {
+			break
+		}
 		fake(line)
+	}
+
+	if err != io.EOF {
+		log.Fatal(err)
 	}
 }
 
-// readerString bufio.reader.ReadString each line.
-// converts to a string so should be slower  than readBytes
 func readerString(fname string) {
 	file, err := os.Open(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 	bufferedReader := bufio.NewReader(file)
 	fake := func(s string) {
 
 	}
 	var line string
 
-	for  ; err != nil; line, err = bufferedReader.ReadString('\n'){
+	for {
+		line, err = bufferedReader.ReadString('\n')
+		if  err != nil {
+			break
+		}
 		fake(line)
 	}
-}
 
-// read It doesn't read by line, but by buffer, so we have to
-// implement that logic
-func read(fname string, bufferSize int) {
-	file, err := os.Open(fname)
-	if err != nil {
+	if err != io.EOF {
 		log.Fatal(err)
 	}
-	defer file.Close()
-
-
-	buf := make([]byte, bufferSize) // define your buffer size here.
-
-	for {
-		n, err := file.Read(buf)
-
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Printf("read %d bytes: %v", n, err)
-			break
-		}
-	}
 }
+
 
 // scanner bufio.scanner.Text (string each line)
 func scannerString(fname string) {
