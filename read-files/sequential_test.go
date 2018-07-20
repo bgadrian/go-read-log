@@ -2,8 +2,8 @@ package read_files
 
 import "testing"
 
-//var fn = "apache_log_200kb.log"
-var fn = "apache_log_1MB.log"
+var fn = "apache_log_200kb.log"
+//var fn = "apache_log_1MB.log"
 
 func BenchmarkBufioReaderBytes(b *testing.B) {
 	for n := 0; n < b.N; n++ {
@@ -26,6 +26,12 @@ func BenchmarkFileRead16KB(b *testing.B) {
 func BenchmarkFileRead32KB(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		read(fn, 32*1024)
+	}
+}
+
+func BenchmarkFileRead64KB(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		read(fn, 64*1024)
 	}
 }
 

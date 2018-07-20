@@ -1,0 +1,7 @@
+goos: linux
+goarch: amd64
+pkg: github.com/bgadrian/go-read-log/process-lines
+BenchmarkRegex-4    	  100000	     18767 ns/op
+BenchmarkSplitn-4   	 2000000	       653 ns/op
+PASS
+ok  	github.com/bgadrian/go-read-log/process-lines	4.049s
