@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-var fnBench = "read-files/benchmark_1MB.log"
+var fnBench = "read-files/log_200kb.log"
 var fn = "read-files/log_2lines.log"
 var result = []lineInfo {
 	{"67.248.219.84", "/a", "9670"},

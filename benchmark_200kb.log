@@ -1,0 +1,10 @@
+goos: linux
+goarch: amd64
+pkg: github.com/bgadrian/go-read-log
+BenchmarkProcessSeq-4           	    2000	    771521 ns/op
+BenchmarkProcessThreadPool1-4   	    1000	   1282001 ns/op
+BenchmarkProcessThreadPool2-4   	    1000	   1243719 ns/op
+BenchmarkProcessThreadPool3-4   	    1000	   1254121 ns/op
+BenchmarkProcessThreadPool5-4   	    1000	   1231563 ns/op
+PASS
+ok  	github.com/bgadrian/go-read-log	7.184s
