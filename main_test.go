@@ -5,7 +5,9 @@ import "testing"
 var fnBench = "read-files/log_200kb.log"
 
 //var fnBench = "read-files/log_2lines.log"
+
 //var fnBench = "read-files/log_1MB.log"
+
 //var fnBench = "../log_big.log"
 var fn = "read-files/log_2lines.log"
 var result = []lineInfo{
