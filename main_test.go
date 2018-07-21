@@ -2,11 +2,13 @@ package main
 
 import "testing"
 
-//var fnBench = "read-files/log_200kb.log"
+var fnBench = "read-files/log_200kb.log"
+
 //var fnBench = "read-files/log_2lines.log"
-var fnBench = "read-files/log_1MB.log"
+//var fnBench = "read-files/log_1MB.log"
+//var fnBench = "../log_big.log"
 var fn = "read-files/log_2lines.log"
-var result = []lineInfo {
+var result = []lineInfo{
 	{"67.248.219.84", "/a", "9670"},
 	{"133.141.46.13", "/a/c/d", "738"},
 }
@@ -35,6 +37,7 @@ func TestProcessThreadPool(t *testing.T) {
 
 	if len(res) != len(result) {
 		t.Errorf("different result")
+		return
 	}
 
 	for i, should := range result {
@@ -49,7 +52,6 @@ func TestProcessThreadPool(t *testing.T) {
 	}
 }
 
-
 func BenchmarkProcessSeq(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		processSeq(fnBench)
@@ -59,6 +61,12 @@ func BenchmarkProcessSeq(b *testing.B) {
 func BenchmarkProcessThreadPool1(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		processThreadPool(fnBench, 1)
+	}
+}
+
+func BenchmarkProcessThreadPool2(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPool(fnBench, 2)
 	}
 }
 
@@ -80,3 +88,20 @@ func BenchmarkProcessThreadPool50(b *testing.B) {
 	}
 }
 
+func BenchmarkProcessThreadPool3Batch3(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPoolBatch(fnBench, 3, 3)
+	}
+}
+
+func BenchmarkProcessThreadPool3Batch5(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPoolBatch(fnBench, 3, 5)
+	}
+}
+
+func BenchmarkProcessThreadPool3Batch10(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		processThreadPoolBatch(fnBench, 3, 10)
+	}
+}
