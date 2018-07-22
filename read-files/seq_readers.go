@@ -1,10 +1,10 @@
 package read_files
 
 import (
-	"os"
-	"log"
-	"io"
 	"bufio"
+	"io"
+	"log"
+	"os"
 )
 
 func readerReadLine(fname string) {
@@ -50,7 +50,7 @@ func readerString(fname string) {
 
 	for {
 		line, err = bufferedReader.ReadString('\n')
-		if  err != nil {
+		if err != nil {
 			break
 		}
 		fake(line)
@@ -60,7 +60,6 @@ func readerString(fname string) {
 		log.Fatal(err)
 	}
 }
-
 
 // scanner bufio.scanner.Text (string each line)
 func scannerString(fname string) {
@@ -72,7 +71,7 @@ func scannerString(fname string) {
 
 	scanner := bufio.NewScanner(file)
 
-	for scanner.Scan() {             // internally, it advances token based on sperator
+	for scanner.Scan() { // internally, it advances token based on sperator
 		scanner.Text() // token in unicode-char
 	}
 }
@@ -87,9 +86,7 @@ func scannerBytes(fname string) {
 
 	scanner := bufio.NewScanner(file)
 
-	for scanner.Scan() {             // internally, it advances token based on sperator
+	for scanner.Scan() { // internally, it advances token based on sperator
 		scanner.Bytes()
 	}
 }
-
-
