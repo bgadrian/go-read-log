@@ -48,13 +48,18 @@ func readerAtSplitToLines(r io.ReaderAt, bufferSize int64, f process) {
 		//for each byte that was read from the file
 		for i := 0; i < n; i++ {
 			b := buffer[i]
-			if b == nl || err == io.EOF {
+			if b == nl {
 				//we detected a new line
 				f(prefix)
 				prefix = prefix[:0] //clear, keep capacity
 				continue            //ignore the \n byte
 			}
 			prefix = append(prefix, b)
+		}
+
+		if err == io.EOF && len(prefix) > 0 {
+			f(prefix)
+			prefix = prefix[:0] //clear, keep capacity
 		}
 	}
 

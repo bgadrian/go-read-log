@@ -6,19 +6,35 @@ will be called with each line of the file,
 but not in sequential order.
 */
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"sync"
+
+	"github.com/pkg/errors"
+	"golang.org/x/exp/mmap"
 )
 
+//chunk Slice of a long byte slice.
+// Start/end are byte positions
+// Start/End are both inclusive.
 type chunk struct {
 	start, end int64
-	//end byte should be a newLine or EOF
+	//file[end] can be a /n, if not probably its the EOF
 }
 
-// return the first byte position that is newLine or EOF
-func findNextNewLine(r io.ReaderAt, startAt int64) int64 {
+func (c chunk) Size() int64 {
+	return c.end - c.start + 1
+}
+
+func (c chunk) String() string {
+	return fmt.Sprintf("{%d:%d(%d)}", c.start, c.end, c.Size())
+}
+
+// return the first byte position that is newLine or
+// the last byte position before EOF
+func findNextNewLine(r io.ReaderAt, startAt int64) (int64, error) {
 	buffer := make([]byte, 32)
 	offset := startAt
 	var err error
@@ -28,35 +44,52 @@ func findNextNewLine(r io.ReaderAt, startAt int64) int64 {
 
 		for i = 0; i < n; i++ {
 			if buffer[i] == nl {
-				return offset + int64(i)
+				return offset + int64(i), nil
 			}
 		}
 		offset += int64(n)
 	}
 
 	if err == io.EOF {
-		return offset
+		return offset - 1, nil
 	}
-	return -1
+	return -1, errors.New("no new line or EOF")
 }
 
-func divideToChunks(r io.ReaderAt, totalSize int64, count int) []chunk {
-	var chunks []chunk
+func splitToChunks(r io.ReaderAt, totalSize int64, count int) []chunk {
+	var result []chunk
 	aproxChunkSize := totalSize / int64(count)
+	leftBytes := totalSize
 	for i := 0; i < count; i++ {
 		var startByte int64
 		if i > 0 {
 			//start is the previous end
-			startByte = chunks[i-1].end + 1
+			startByte = result[i-1].end + 1
 		}
 		aproxEndByte := startByte + aproxChunkSize
-		endByte := findNextNewLine(r, aproxEndByte)
-		chunks = append(chunks, chunk{startByte, endByte})
-		if chunks[i].end == totalSize {
-			break
-		} //done earlier
+		if aproxEndByte >= totalSize {
+			aproxEndByte = totalSize - 1
+		}
+		endByte, err := findNextNewLine(r, aproxEndByte)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		result = append(result, chunk{startByte, endByte})
+
+		leftBytes -= result[i].Size()
+		if leftBytes == 0 {
+			break //done earlier
+		}
+		if leftBytes < 0 {
+			log.Panicf("more bytes in result than total %s  %d", result, totalSize)
+		}
 	}
-	return chunks
+	if leftBytes > 0 {
+		//we have leftovers, we put them to the end
+		result[len(result)-1].end = totalSize - 1
+	}
+	return result
 }
 
 func ParallelFileio(fname string, bufferSize int64, f process, tasksCount int) {
@@ -66,12 +99,27 @@ func ParallelFileio(fname string, bufferSize int64, f process, tasksCount int) {
 	}
 	defer file.Close()
 
-	//difficult thing is to split the file at exactly new line bytes
 	stat, err := file.Stat()
 	if err != nil {
 		log.Fatal(err)
 	}
-	chunks := divideToChunks(file, stat.Size(), tasksCount)
+	readerParall(file, stat.Size(), bufferSize, f, tasksCount)
+}
+
+func ParallelMmap(fname string, bufferSize int64, f process, tasksCount int) {
+	readerAt, err := mmap.Open(fname)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer readerAt.Close()
+	readerParall(readerAt, int64(readerAt.Len()), bufferSize, f, tasksCount)
+}
+
+func readerParall(r io.ReaderAt, fileSize int64, bufferSize int64, f process, tasksCount int) {
+	//difficult thing is to split the file at exactly new line bytes
+
+	chunks := splitToChunks(r, fileSize, tasksCount)
 
 	//we are using SectionReaders to easy the logic and reuse the code
 	//each chunk will think is a different file
@@ -79,8 +127,7 @@ func ParallelFileio(fname string, bufferSize int64, f process, tasksCount int) {
 	wg.Add(len(chunks))
 
 	for _, subfile := range chunks {
-		size := subfile.end - subfile.start
-		r := io.NewSectionReader(file, subfile.start, size)
+		r := io.NewSectionReader(r, subfile.start, subfile.Size())
 
 		go func(r io.ReaderAt) {
 			defer wg.Done()
@@ -89,16 +136,4 @@ func ParallelFileio(fname string, bufferSize int64, f process, tasksCount int) {
 	}
 
 	wg.Wait()
-
 }
-
-//func mmapExp(fname string, bufferSize int64, f process) {
-//	readerAt, err := mmap.Open(fname)
-//	if err != nil {
-//		log.Fatal(err)
-//		return
-//	}
-//	defer readerAt.Close()
-//
-//	readerAtSplitToLines(readerAt, bufferSize, f)
-//}

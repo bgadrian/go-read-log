@@ -6,14 +6,14 @@ var parseLine = func(line []byte) {
 	//fmt.Println(string(line))
 }
 
-func BenchmarkFileio128Medium(b *testing.B) {
+func BenchmarkReadFileFileio256Medium(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		Fileio(fnMedium, 128, parseLine)
+		Fileio(fnMedium, 256, parseLine)
 	}
 }
 
-func BenchmarkMmapExp128Medium(b *testing.B) {
+func BenchmarkReadFileMmapExp256Medium(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		mmapExp(fnMedium, 128, parseLine)
+		mmapExp(fnMedium, 256, parseLine)
 	}
 }
